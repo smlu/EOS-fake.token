@@ -3,7 +3,7 @@ using namespace fake;
 
 void token::create(name issuer, asset  maximum_supply)
 {
-    require_auth(_self);
+    require_auth(issuer);
 
     auto sym = maximum_supply.symbol;
     eosio_assert( sym.is_valid(), "invalid symbol name" );
@@ -25,20 +25,20 @@ void token::create(name issuer, asset  maximum_supply)
 void token::issue(name to, asset quantity, std::string memo)
 {
     auto sym = quantity.symbol;
-    eosio_assert( sym.is_valid(), "invalid symbol name" );
-    eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
+    eosio_assert(sym.is_valid(), "invalid symbol name");
+    eosio_assert(memo.size() <= 256, "memo has more than 256 bytes" );
 
     stats statstable( _self, sym.code().raw() );
     auto existing = statstable.find( sym.code().raw() );
-    eosio_assert( existing != statstable.end(), "token with symbol does not exist, create token before issue" );
+    eosio_assert(existing != statstable.end(), "token with symbol does not exist, create token before issue");
     const auto& st = *existing;
 
-    require_auth( st.issuer );
-    eosio_assert( quantity.is_valid(), "invalid quantity" );
-    eosio_assert( quantity.amount > 0, "must issue positive quantity" );
+    require_auth(st.issuer );
+    eosio_assert(quantity.is_valid(), "invalid quantity");
+    eosio_assert(quantity.amount > 0, "must issue positive quantity");
 
-    eosio_assert( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
-    eosio_assert( quantity.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
+    eosio_assert(quantity.symbol == st.supply.symbol, "symbol precision mismatch");
+    eosio_assert(quantity.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
 
     statstable.modify( st, same_payer, [&](auto& s) {
         s.supply += quantity;
@@ -98,8 +98,8 @@ void token::transfer(name from, name to, asset quantity, std::string memo)
     add_balance(to, quantity, payer);
 }
 
-void token::sub_balance( name owner, asset value ) {
-    accounts from_acnts( _self, owner.value );
+void token::sub_balance(name owner, asset value) {
+    accounts from_acnts(_self, owner.value);
 
     const auto& from = from_acnts.get(value.symbol.code().raw(), "no balance object found");
     eosio_assert(from.balance.amount >= value.amount, "overdrawn balance");
@@ -145,7 +145,7 @@ void token::open(name owner, const symbol& symbol, name ram_payer)
 
 void token::close(name owner, const symbol& symbol)
 {
-    require_auth( owner );
+    require_auth(owner);
     accounts acnts(_self, owner.value);
     auto it = acnts.find(symbol.code().raw());
     eosio_assert(it != acnts.end(), "Balance row already deleted or never existed. Action won't have any effect.");

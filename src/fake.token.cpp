@@ -6,9 +6,9 @@ void token::create(name issuer, asset  maximum_supply)
     require_auth(issuer);
 
     auto sym = maximum_supply.symbol;
-    eosio_assert( sym.is_valid(), "invalid symbol name" );
-    eosio_assert( maximum_supply.is_valid(), "invalid supply");
-    eosio_assert( maximum_supply.amount > 0, "max-supply must be positive");
+    eosio_assert(sym.is_valid(), "invalid symbol name");
+    eosio_assert(maximum_supply.is_valid(), "invalid supply");
+    eosio_assert(maximum_supply.amount > 0, "max-supply must be positive");
 
     stats statstable(_self, sym.code().raw());
     auto existing = statstable.find( sym.code().raw());
@@ -146,8 +146,14 @@ void token::open(name owner, const symbol& symbol, name ram_payer)
 void token::close(name owner, const symbol& symbol)
 {
     require_auth(owner);
+    auto sym_code_raw = symbol.code().raw();
+
+    stats statstable(_self, sym_code_raw);
+    const auto& st = statstable.get(sym_code_raw, "symbol does not exist");
+    eosio_assert(st.supply.symbol == symbol, "symbol precision mismatch");
+
     accounts acnts(_self, owner.value);
-    auto it = acnts.find(symbol.code().raw());
+    auto it = acnts.find(sym_code_raw);
     eosio_assert(it != acnts.end(), "Balance row already deleted or never existed. Action won't have any effect.");
     eosio_assert(it->balance.amount == 0, "Cannot close because the balance is not zero.");
     acnts.erase(it);

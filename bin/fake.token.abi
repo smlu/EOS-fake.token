@@ -1,9 +1,51 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Sat Oct 13 19:57:04 2018",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Sun Oct 14 01:25:57 2018",
     "version": "eosio::abi/1.0",
     "structs": [
         {
+            "name": "account",
+            "base": "",
+            "fields": [
+                {
+                    "name": "balance",
+                    "type": "asset"
+                }
+            ]
+        },
+        {
+            "name": "currency_stats",
+            "base": "",
+            "fields": [
+                {
+                    "name": "supply",
+                    "type": "asset"
+                },
+                {
+                    "name": "max_supply",
+                    "type": "asset"
+                },
+                {
+                    "name": "issuer",
+                    "type": "name"
+                }
+            ]
+        },
+        {
             "name": "close",
+            "base": "",
+            "fields": [
+                {
+                    "name": "owner",
+                    "type": "name"
+                },
+                {
+                    "name": "symbol",
+                    "type": "symbol"
+                }
+            ]
+        },
+        {
+            "name": "closefaucet",
             "base": "",
             "fields": [
                 {
@@ -27,6 +69,52 @@
                 {
                     "name": "maximum_supply",
                     "type": "asset"
+                }
+            ]
+        },
+        {
+            "name": "faucet",
+            "base": "",
+            "fields": [
+                {
+                    "name": "owner",
+                    "type": "name"
+                },
+                {
+                    "name": "supply",
+                    "type": "asset"
+                },
+                {
+                    "name": "payout",
+                    "type": "asset"
+                }
+            ]
+        },
+        {
+            "name": "faucet_user",
+            "base": "",
+            "fields": [
+                {
+                    "name": "sym",
+                    "type": "symbol"
+                },
+                {
+                    "name": "last_claim",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "gettoken",
+            "base": "",
+            "fields": [
+                {
+                    "name": "account",
+                    "type": "name"
+                },
+                {
+                    "name": "symbol",
+                    "type": "symbol"
                 }
             ]
         },
@@ -67,6 +155,20 @@
             ]
         },
         {
+            "name": "openfaucet",
+            "base": "",
+            "fields": [
+                {
+                    "name": "owner",
+                    "type": "name"
+                },
+                {
+                    "name": "payout",
+                    "type": "asset"
+                }
+            ]
+        },
+        {
             "name": "retire",
             "base": "",
             "fields": [
@@ -77,6 +179,20 @@
                 {
                     "name": "memo",
                     "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "setfaucetpay",
+            "base": "",
+            "fields": [
+                {
+                    "name": "owner",
+                    "type": "name"
+                },
+                {
+                    "name": "payout",
+                    "type": "asset"
                 }
             ]
         },
@@ -111,8 +227,18 @@
             "ricardian_contract": ""
         },
         {
+            "name": "closefaucet",
+            "type": "closefaucet",
+            "ricardian_contract": ""
+        },
+        {
             "name": "create",
             "type": "create",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "gettoken",
+            "type": "gettoken",
             "ricardian_contract": ""
         },
         {
@@ -126,8 +252,18 @@
             "ricardian_contract": ""
         },
         {
+            "name": "openfaucet",
+            "type": "openfaucet",
+            "ricardian_contract": ""
+        },
+        {
             "name": "retire",
             "type": "retire",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "setfaucetpay",
+            "type": "setfaucetpay",
             "ricardian_contract": ""
         },
         {
@@ -140,6 +276,20 @@
         {
             "name": "accounts",
             "type": "account",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "faucet.users",
+            "type": "faucet_user",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "faucets",
+            "type": "faucet",
             "index_type": "i64",
             "key_names": [],
             "key_types": []

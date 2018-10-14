@@ -11,10 +11,10 @@ void token::create(name issuer, asset  maximum_supply)
     eosio_assert(maximum_supply.amount > 0, "max-supply must be positive");
 
     stats statstable(_self, sym.code().raw());
-    auto existing = statstable.find( sym.code().raw());
+    auto existing = statstable.find(sym.code().raw());
     eosio_assert(existing == statstable.end(), "token with symbol already exists");
 
-    statstable.emplace( _self, [&](auto& s) {
+    statstable.emplace(issuer, [&](auto& s) {
         s.supply.symbol = maximum_supply.symbol;
         s.max_supply    = maximum_supply;
         s.issuer        = issuer;
@@ -28,7 +28,7 @@ void token::issue(name to, asset quantity, std::string memo)
     eosio_assert(sym.is_valid(), "invalid symbol name");
     eosio_assert(memo.size() <= 256, "memo has more than 256 bytes" );
 
-    stats statstable( _self, sym.code().raw() );
+    stats statstable(_self, sym.code().raw());
     auto existing = statstable.find( sym.code().raw() );
     eosio_assert(existing != statstable.end(), "token with symbol does not exist, create token before issue");
     const auto& st = *existing;
@@ -40,7 +40,7 @@ void token::issue(name to, asset quantity, std::string memo)
     eosio_assert(quantity.symbol == st.supply.symbol, "symbol precision mismatch");
     eosio_assert(quantity.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
 
-    statstable.modify( st, same_payer, [&](auto& s) {
+    statstable.modify(st, same_payer, [&](auto& s) {
         s.supply += quantity;
     });
 
@@ -52,7 +52,7 @@ void token::issue(name to, asset quantity, std::string memo)
     }
 }
 
-void token::retire(asset quantity, std::string memo )
+void token::retire(asset quantity, std::string memo)
 {
     auto sym = quantity.symbol;
     eosio_assert(sym.is_valid(), "invalid symbol name");
@@ -93,9 +93,32 @@ void token::transfer(name from, name to, asset quantity, std::string memo)
     eosio_assert(quantity.symbol == st.supply.symbol, "symbol precision mismatch");
     eosio_assert(memo.size() <= 256, "memo has more than 256 bytes");
 
-    auto payer = has_auth( to ) ? to : from;
+    auto payer = has_auth(to) ? to : from;
     sub_balance(from, quantity);
     add_balance(to, quantity, payer);
+
+    // if(from == _self)
+    // {
+    //     auto sym_code = quantity.symbol.code().raw();
+    //     faucets faucets(_self, sym_code);
+    //     auto fit = faucets.find(sym_code);
+    //     if(fit != faucets.end()) {
+    //         require_auth({ from, "eosio.code"_n });
+    //     }
+    // }
+    // else 
+    if(_code == _self && to == _self) 
+    {
+        auto sym_code = quantity.symbol.code().raw();
+        faucets faucets(_self, sym_code);
+        auto fit = faucets.find(sym_code);
+        if(fit != faucets.end())
+        {
+            faucets.modify(fit, same_payer, [&](auto& f){
+                f.supply += quantity;
+            });
+        }
+    }
 }
 
 void token::sub_balance(name owner, asset value) {
@@ -137,7 +160,7 @@ void token::open(name owner, const symbol& symbol, name ram_payer)
     accounts acnts(_self, owner.value);
     auto it = acnts.find(sym_code_raw);
     if(it == acnts.end()) {
-        acnts.emplace( ram_payer, [&]( auto& a ){
+        acnts.emplace( ram_payer, [&](auto& a){
             a.balance = asset{0, symbol};
         });
     }
@@ -159,4 +182,98 @@ void token::close(name owner, const symbol& symbol)
     acnts.erase(it);
 }
 
-EOSIO_DISPATCH(token, (create)(issue)(transfer)(open)(close)(retire))
+void token::gettoken(name account, const symbol& sym)
+{
+    require_auth(account);
+
+    auto sym_code = sym.code().raw();
+    faucets faucets(_self, sym_code);
+
+    const auto& faucet = faucets.get(sym_code, "faucet doesn't exists");
+    eosio_assert((faucet.supply - faucet.payout).amount >= 0, "dry faucet");
+
+    fusers usr(_self, account.value);
+    auto fit = usr.find(sym_code);
+    if(fit == usr.end()) 
+    {
+        usr.emplace(account, [&](auto& f){
+            f.sym = sym;
+            f.last_claim = 0;
+        });
+        fit = usr.find(sym_code);
+    }
+
+    auto time_now = now();
+    eosio_assert(time_now - fit->last_claim >= 86400, "reached 24 hours max faucet payout");
+    usr.modify(fit, account, [&](auto& f){
+        f.last_claim = time_now;
+    });
+
+    faucets.modify(faucet, account, [](auto& f){
+        f.supply -= f.payout;
+    });
+
+    SEND_INLINE_ACTION(*this, transfer, { _self, "active"_n },
+        { _self, account, faucet.payout, "faucet" }
+    );
+}
+
+void token::setfaucetpay(name owner, asset payout)
+{
+    require_auth(owner);
+
+    auto sym_code = payout.symbol.code().raw();
+    faucets faucets(_self, sym_code);
+    auto fit = faucets.find(sym_code);
+
+    eosio_assert(fit != faucets.end(), "faucet doesn't exists");
+    eosio_assert(fit->owner == owner, "unauthorized");
+
+    faucets.modify(fit, owner, [&](auto& f){
+        f.payout = payout;
+    });
+}
+
+void token::openfaucet(name owner, asset payout)
+{
+    require_auth(owner);
+
+    auto sym_code = payout.symbol.code().raw();
+    faucets faucets(_self, sym_code);
+    auto fit = faucets.find(sym_code);
+    eosio_assert(fit == faucets.end(), "faucet already opened");
+
+    faucets.emplace(owner, [&](auto& f) {
+        f.owner  = owner;
+        f.supply = asset(0, payout.symbol);
+        f.payout = payout;
+    });
+}
+
+void token::closefaucet(name owner, const symbol& sym)
+{
+    require_auth(owner);
+
+    auto sym_code = sym.code().raw();
+    faucets faucets(_self, sym_code);
+
+    auto fit = faucets.find(sym_code);
+    if(fit == faucets.end())
+    {
+        fusers usr(_self, owner.value);
+        const auto& f = usr.get(sym.code().raw(), "faucet doesn't exists");
+        usr.erase(f);
+        return;
+    }
+
+    eosio_assert(fit->owner == owner, "unauthorized");
+    if(fit->supply.amount > 0) {
+        SEND_INLINE_ACTION(*this, transfer, { _self, "active"_n },
+            { _self, fit->owner, fit->supply, "fauced closed" }
+        );
+    }
+
+    faucets.erase(fit);
+}
+
+EOSIO_DISPATCH(token, (create)(issue)(transfer)(open)(close)(retire)(gettoken)(setfaucetpay)(openfaucet)(closefaucet))

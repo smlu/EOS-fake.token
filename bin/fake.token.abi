@@ -1,6 +1,7 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Sun Oct 14 01:25:57 2018",
-    "version": "eosio::abi/1.0",
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT ",
+    "version": "eosio::abi/1.1",
+    "types": [],
     "structs": [
         {
             "name": "account",
@@ -9,24 +10,6 @@
                 {
                     "name": "balance",
                     "type": "asset"
-                }
-            ]
-        },
-        {
-            "name": "currency_stats",
-            "base": "",
-            "fields": [
-                {
-                    "name": "supply",
-                    "type": "asset"
-                },
-                {
-                    "name": "max_supply",
-                    "type": "asset"
-                },
-                {
-                    "name": "issuer",
-                    "type": "name"
                 }
             ]
         },
@@ -73,6 +56,24 @@
             ]
         },
         {
+            "name": "currency_stats",
+            "base": "",
+            "fields": [
+                {
+                    "name": "supply",
+                    "type": "asset"
+                },
+                {
+                    "name": "max_supply",
+                    "type": "asset"
+                },
+                {
+                    "name": "issuer",
+                    "type": "name"
+                }
+            ]
+        },
+        {
             "name": "faucet",
             "base": "",
             "fields": [
@@ -100,7 +101,7 @@
                 },
                 {
                     "name": "last_claim",
-                    "type": "uint32"
+                    "type": "time_point_sec"
                 }
             ]
         },
@@ -219,7 +220,6 @@
             ]
         }
     ],
-    "types": [],
     "actions": [
         {
             "name": "close",
@@ -303,5 +303,5 @@
         }
     ],
     "ricardian_clauses": [],
-    "abi_extensions": []
+    "variants": []
 }

@@ -1,7 +1,9 @@
 #pragma once
 
-#include <eosiolib/asset.hpp>
-#include <eosiolib/eosio.hpp>
+#include <eosio/asset.hpp>
+#include <eosio/eosio.hpp>
+#include <eosio/multi_index.hpp>
+#include <eosio/time.hpp>
 
 #include <string>
 
@@ -80,9 +82,10 @@ namespace fake {
 
             struct [[eosio::table("faucet.users")]] faucet_user {
                 symbol sym;
-                uint32_t last_claim;
+                time_point_sec last_claim;
 
                 uint64_t primary_key() const { return sym.code().raw(); }
+                EOSLIB_SERIALIZE(faucet_user, (sym)(last_claim))
             };
 
             typedef eosio::multi_index<"accounts"_n, account> accounts;

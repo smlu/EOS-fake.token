@@ -18,4 +18,4 @@ To use faucet for distributing your fake tokens you first have to open faucet fo
 You should receive fake 10000.0000 EOS.
 
 ## Test net
-This test dApp is already set up on the `fake.token` account and is available on <!---[Jungle](https://jungle.bloks.io/account/fake.token) and  --> [Kylin](https://kylin.bloks.io/account/fake.token) test net.
+This test dApp is available on [Jungle](https://jungle.bloks.io/account/fakefaketokn) and [Kylin](https://kylin.bloks.io/account/fake.token) test nets.

@@ -14,35 +14,25 @@ namespace fake {
         public:
             using contract::contract;
 
-            [[eosio::action]]
-            void create(name issuer, asset maximum_supply);
+            ACTION create(name issuer, asset maximum_supply);
 
-            [[eosio::action]]
-            void issue(name to, asset quantity, std::string memo);
+            ACTION issue(name to, asset quantity, std::string memo);
 
-            [[eosio::action]]
-            void retire(asset quantity, std::string memo);
+            ACTION retire(asset quantity, std::string memo);
 
-            [[eosio::action]]
-            void transfer(name from, name to, asset quantity, std::string memo);
+            ACTION transfer(name from, name to, asset quantity, std::string memo);
 
-            [[eosio::action]]
-            void open(name owner, const symbol& symbol, name ram_payer);
+            ACTION open(name owner, const symbol& symbol, name ram_payer);
 
-            [[eosio::action]]
-            void close(name owner, const symbol& symbol);
+            ACTION close(name owner, const symbol& symbol);
 
-            [[eosio::action]]
-            void gettoken(name account, const symbol& symbol);
+            ACTION gettoken(name account, const symbol& symbol);
 
-            [[eosio::action]]
-            void setfaucetpay(name owner, asset payout);
+            ACTION setfaucetpay(name owner, asset payout);
 
-            [[eosio::action]]
-            void openfaucet(name owner, asset payout);
+            ACTION openfaucet(name owner, asset payout);
 
-            [[eosio::action]]
-            void closefaucet(name owner, const symbol& symbol);
+            ACTION closefaucet(name owner, const symbol& symbol);
 
             static asset get_supply(name token_contract_account, symbol_code sym_code)
             {
